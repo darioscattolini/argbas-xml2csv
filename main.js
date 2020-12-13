@@ -1,5 +1,3 @@
-const actionButton = document.querySelector('#convert');
-
 const psProductFields = [
   'id', 'active', 'name', 'categories', 
   'price tax excluded', 'tax rules id', 'wholesale price', 'on sale', 
@@ -20,6 +18,16 @@ const psProductFields = [
   'advanced stock management', 'depends On Stock', 'warehouse', 'acessories'
 ];
 
+const psCombinationsFields = [
+  'product_ID', 'attribute', 'value', 'supplier reference', 'reference', 'ean13',
+  'upc', 'wholesale price', 'impact on price', 'ecotax', 'quantity', 
+  'minimal quantity', 'low stock level', 'impact on weight', 'default', 
+  'available date', 'image position', 'image urls', 'img alt text',
+  'shop id/name', 'advanced stock managment', 'depends on stock', 'warehouse'
+];
+
+const actionButton = document.querySelector('#convert');
+
 actionButton.addEventListener('click', async (event) => {
   event.stopPropagation();
   event.preventDefault();
@@ -30,51 +38,27 @@ actionButton.addEventListener('click', async (event) => {
   switch (option) {
     case "products":
       csv = await getProductsCsv(xml);
+      for (const lang in csv) {
+        const langName = lang === '1' ? 'es' : lang === '2' ? 'ca' : 'en';
+        const encodedUri = encodeURI(csv[lang]);
+        const fileName = 'products-' + langName + '.csv' ;
+        downloadCsv(encodedUri, fileName);
+      }
       break;
     case "combinations":
       csv = await getCombinationsCsv(xml);
+      const encodedUri = encodeURI(csv);
+      downloadCsv(encodedUri, 'combinations.csv');
       break;
-  }
-
-  for (const lang in csv) {
-    const langName = lang === '1' ? 'es' : lang === '2' ? 'ca' : 'en';
-    const encodedUri = encodeURI(csv[lang]);
-
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `${option}-${langName}.csv`);
-    document.body.appendChild(link);
-    link.click();
   }
 });
 
-function getFileContent(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-
-    reader.onload = () => {
-      resolve(reader.result);
-    };
-
-    reader.onerror = reject;
-
-    reader.readAsText(file);
-  })
-}
-
-async function parseXml(xml) {
-  try {
-    const content = await getFileContent(xml);
-    const parser = new DOMParser();
-    const parsedXml = parser.parseFromString(content, 'application/xml');
-    if (parsedXml.documentElement.nodeName === 'parsererror') {
-      throw new Error('Error while parsing XML file.');
-    } else {
-      return parsedXml.documentElement;
-    }
-  } catch(error) {
-    alert(error);
-  }
+function downloadCsv(csvUri, fileName) {
+  const link = document.createElement("a");
+  link.setAttribute("href", csvUri);
+  link.setAttribute("download", fileName);
+  document.body.appendChild(link);
+  link.click();
 }
 
 async function getProductsCsv(xml) {
@@ -150,8 +134,6 @@ function getProductValue(xmlProduct, field) {
       return xmlProduct.querySelector('supplier').innerHTML;
     case 'manufacturer':
       return xmlProduct.querySelector('manufacturer').innerHTML;
-    case 'ean13':
-      return xmlProduct.querySelector('ean13').innerHTML;
     case 'weight':
       return xmlProduct.querySelector('weight').innerHTML;
     case 'quantity':
@@ -194,5 +176,91 @@ function getProductValue(xmlProduct, field) {
       return xmlProduct.querySelector('shop').innerHTML;
     default:
       return '';
+  }
+}
+
+async function getCombinationsCsv(xml) {
+  const xmlCombinations = await parseXml(xml);
+  const combinations = Array.from(xmlCombinations.querySelectorAll('twinPrestaShopProductAttributes'));
+  const csv = parseCombinationsXml2Csv(combinations);
+  return csv;
+}
+
+function parseCombinationsXml2Csv(xmlCombinations) {
+  let csv = 'data:text/csv;charset=utf-8,';
+  csv += psCombinationsFields.join(';') + '\n';
+  xmlCombinations.forEach(combination => { csv += buildCombinationLine(combination) + '\n'; });
+  return csv;
+}
+
+function buildCombinationLine(xmlCombination) {
+  let line = '';
+  for (const field of psCombinationsFields) {
+    let fieldValue = getCombinationValue(xmlCombination, field);
+    fieldValue = fieldValue.replace(/"/g, "'");
+    line += `"${fieldValue}"`;
+    line += ';'
+  }
+  return line;
+}
+
+function getCombinationValue(xmlCombination, field) {
+  switch (field) {
+    case 'attribute':
+      return xmlCombination.querySelector('group').innerHTML;
+    case 'value':
+        return xmlCombination.querySelector('attribute').innerHTML;
+    case 'supplier reference':
+      return xmlCombination.querySelector('supplier_reference').innerHTML;
+    case 'reference':
+      return xmlCombination.querySelector('referenceproduct').innerHTML;
+    case 'wholesale price':
+        return xmlCombination.querySelector('wholesale_price').innerHTML;
+    case 'impact on price':
+      debugger;
+      return xmlCombination.querySelector('price').innerHTML;
+    case 'ecotax':
+      return xmlCombination.querySelector('ecotax').innerHTML;
+    case 'quantity':
+      return xmlCombination.querySelector('quantity').innerHTML;
+    case 'minimal quantity':
+      return xmlCombination.querySelector('minimal_quantity').innerHTML;
+    case 'impact on weight':
+      return xmlCombination.querySelector('weight').innerHTML;
+    case 'default':
+        return xmlCombination.querySelector('default_on') ? '0': '1';
+    case 'shop id/name':
+      return xmlCombination.querySelector('shop').innerHTML;
+    default:
+      return '';
+  }
+}
+
+function getFileContent(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      resolve(reader.result);
+    };
+
+    reader.onerror = reject;
+
+    reader.readAsText(file);
+  })
+}
+
+async function parseXml(xml) {
+  try {
+    const content = await getFileContent(xml);
+    const parser = new DOMParser();
+    const parsedXml = parser.parseFromString(content, 'application/xml');
+    if (parsedXml.documentElement.nodeName === 'parsererror') {
+      throw new Error('Error while parsing XML file.');
+    } else {
+      return parsedXml.documentElement;
+    }
+  } catch(error) {
+    alert(error);
   }
 }
