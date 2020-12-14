@@ -217,7 +217,6 @@ function getCombinationValue(xmlCombination, field) {
     case 'wholesale price':
         return xmlCombination.querySelector('wholesale_price').innerHTML;
     case 'impact on price':
-      debugger;
       return xmlCombination.querySelector('price').innerHTML;
     case 'ecotax':
       return xmlCombination.querySelector('ecotax').innerHTML;
