@@ -138,10 +138,8 @@ function getProductValue(xmlProduct, field) {
       return xmlProduct.querySelector('weight').innerHTML;
     case 'quantity':
       return xmlProduct.querySelector('quantity').innerHTML;
-    case 'summary':
-      return xmlProduct.querySelector('description_short').innerHTML;
     case 'description':
-      return xmlProduct.querySelector('description').innerHTML;
+      return xmlProduct.querySelector('description_short').innerHTML;
     case 'meta title':
       return xmlProduct.querySelector('meta_title').innerHTML;
     case 'meta keywords':
