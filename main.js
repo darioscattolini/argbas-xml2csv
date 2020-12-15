@@ -135,7 +135,6 @@ function parseTeinorProducts(teinorProductsXml) {
 }
 
 function updatePsProducts(psProducts, teinorProducts) {
-  console.log(psProducts, teinorProducts);
   const updatedProducts = [];
   const unfoundProducts = [];
 
@@ -150,19 +149,16 @@ function updatePsProducts(psProducts, teinorProducts) {
     }
 
     if (product.priceTin !== teinorProduct.price) {
-      debugger;
       updated = true;
       product.priceTin = teinorProduct.price;
     }
 
     if (product.quantity !== teinorProduct.quantity) {
-      debugger;
       updated = true;
       product.quantity = teinorProduct.quantity;
     }
 
     if (product.active !== teinorProduct.active) {
-      debugger;
       updated = true;
       product.active = teinorProduct.active;
     }
