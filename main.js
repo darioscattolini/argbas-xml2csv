@@ -77,6 +77,7 @@ async function getPsProductsJson(psCsv) {
       'quantity', 'active', 'position'
     ]
   }).fromString(csvContent);
+  json.forEach(product => product.active = product.active === '0' ? '1' : '0');  //inverted values in PS export tables
   return json;
 }
 
@@ -134,6 +135,7 @@ function parseTeinorProducts(teinorProductsXml) {
 }
 
 function updatePsProducts(psProducts, teinorProducts) {
+  console.log(psProducts, teinorProducts);
   const updatedProducts = [];
   const unfoundProducts = [];
 
@@ -148,16 +150,19 @@ function updatePsProducts(psProducts, teinorProducts) {
     }
 
     if (product.priceTin !== teinorProduct.price) {
+      debugger;
       updated = true;
       product.priceTin = teinorProduct.price;
     }
 
     if (product.quantity !== teinorProduct.quantity) {
+      debugger;
       updated = true;
       product.quantity = teinorProduct.quantity;
     }
 
     if (product.active !== teinorProduct.active) {
+      debugger;
       updated = true;
       product.active = teinorProduct.active;
     }
