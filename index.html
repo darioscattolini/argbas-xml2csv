@@ -8,16 +8,19 @@
   <link rel='stylesheet' type='text/css' media='screen' href='main.css'>
 </head>
 <body>
-    <h1>Teinor XML to CSV converter</h1>
-    <form>
-      <select id="options">
-        <option value="products">Products</option>
-        <option value="combinations">Combinations</option>
-      </select>
-      <input type="file" id="xml">
-      <button id="convert">Convert</button>
-    </form>
+    <h1>Actualizar catálogo de Argent Basic</h1>
+    <div>
+      <h2>Productos</h2>
+      <form>
+        <p>Tabla de productos de PS: <input type="file" id="psProducts"></p>
+        <p>Tabla prestashop_products.xml: <input type="file" id="xmlProducts"></p>
+        <button id="updateProducts">Obtener actualizacion</button>
+      </form>
+    </div>
+    
+    <h2>Combinations</h2>
 
+    <script src="https://cdn.rawgit.com/Keyang/node-csvtojson/d41f44aa/browser/csvtojson.min.js"></script>
     <script src='main.js'></script>
 </body>
 </html>
