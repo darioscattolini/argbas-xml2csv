@@ -1,30 +1,5 @@
-const psProductFields = [
-  'id', 'active', 'name', 'categories', 
-  'price tax excluded', 'tax rules id', 'wholesale price', 'on sale', 
-  'discount amount', 'discount percent', 'discount from', 'discount to', 
-  'reference', 'supplier reference', 'supplier', 'manufacturer', 'ean13', 
-  'upc', 'ecotax', 'width', 'height', 'depth', 'weight', 
-  'delivery time in-stock', 'delivery time out-of-stock',
-  'quantity', 'minimal quantity', 'low stock level', 'send email when quantity < level',
-  'visibility', 'additional shipping cost', 'unity', 'unit price',
-  'summary', 'description', 'tags', 'meta title', 'meta keywords', 
-  'meta description', 'URL rewritten', 'text when in stock', 'text when backorder allowed',
-  'available for order', 'available date', 'creation date', 'show price',
-  'image URLs', 'image alt texts', 'delete existing images', 'feature',
-  'online only', 'condition', 'customizable (0 = No, 1 = Yes)', 
-  'uploadable files (0 = No, 1 = Yes)', 'text fields (0 = No, 1 = Yes)',
-  'out of stock action', 'virtual product', 'file URL', 'allowed downloads',
-  'expiration date', 'number of days', 'shop id/name', 
-  'advanced stock management', 'depends On Stock', 'warehouse', 'acessories'
-];
-
-const psCombinationsFields = [
-  'product_ID', 'attribute', 'value', 'supplier reference', 'reference', 'ean13',
-  'upc', 'wholesale price', 'impact on price', 'ecotax', 'quantity', 
-  'minimal quantity', 'low stock level', 'impact on weight', 'default', 
-  'available date', 'image position', 'image urls', 'img alt text',
-  'shop id/name', 'advanced stock managment', 'depends on stock', 'warehouse'
-];
+/*** PRODUCTS UPDATE ***
+ ********************************/
 
 const updateProductsBtn = document.querySelector('#updateProducts');
 
@@ -36,7 +11,7 @@ updateProductsBtn.addEventListener('click', async (event) => {
   const teinorRawXml = document.querySelector('#xmlProducts').files[0];
   
   const psJson = await getPsProductsJson(psRawCsv);
-  const teinorXml = await getTeinorProductsXml(teinorRawXml);
+  const teinorXml = await getTeinorXmlNodes(teinorRawXml, 'product');
   const teinorJson = parseTeinorProducts(teinorXml);
   
   const updatedPsList = updatePsProducts(psJson, teinorJson);
@@ -49,23 +24,6 @@ updateProductsBtn.addEventListener('click', async (event) => {
 
   downloadCsv(updatedProductsCsv, 'updated_products.csv');
   downloadCsv(unfoundProductsCsv, 'unfound_products.csv');
-
-  /*switch (option) {
-    case "products":
-      csv = await getProductsCsv(xml);
-      for (const lang in csv) {
-        const langName = lang === '1' ? 'es' : lang === '2' ? 'ca' : 'en';
-        const encodedUri = encodeURI(csv[lang]);
-        const fileName = 'products-' + langName + '.csv' ;
-        downloadCsv(encodedUri, fileName);
-      }
-      break;
-    case "combinations":
-      csv = await getCombinationsCsv(xml);
-      const encodedUri = encodeURI(csv);
-      downloadCsv(encodedUri, 'combinations.csv');
-      break;
-  }*/
 });
 
 async function getPsProductsJson(psCsv) {
@@ -79,12 +37,6 @@ async function getPsProductsJson(psCsv) {
   }).fromString(csvContent);
   json.forEach(product => product.active = product.active === '0' ? '1' : '0');  //inverted values in PS export tables
   return json;
-}
-
-async function getTeinorProductsXml(rawXml) {
-  const parsedXml = await parseXml(rawXml);
-  const xmlProducts = Array.from(parsedXml.querySelectorAll('twinPrestaShop5'));
-  return xmlProducts;
 }
 
 function parseTeinorProducts(teinorProductsXml) {
@@ -169,60 +121,26 @@ function updatePsProducts(psProducts, teinorProducts) {
   return { updatedProducts, unfoundProducts };
 }
 
-function buildCsv(json, headers) {
-  let csv = 'data:text/csv;charset=utf-8,';
-  csv += headers.join(';') + '\n';
-  json.forEach(item => { csv += buildCsvLine(item, headers); });
-  return csv;
-}
-
-function buildCsvLine(item, headers) {
-  let line = '';
-  for (const header of headers) {
-    let fieldValue = item[header];
-    fieldValue = fieldValue.replace(/"/g, '""');
-    line += `"${fieldValue}"`;
-    line += ';'
-  }
-  line += '\n';
-  return line;
-}
-
-function downloadCsv(csv, fileName) {
-  const csvUri = encodeURI(csv);
-  const link = document.createElement("a");
-  link.setAttribute("href", csvUri);
-  link.setAttribute("download", fileName);
-  document.body.appendChild(link);
-  link.click();
-}
-
-function filterByLang(xmlItems) {
-  return xmlItems.reduce((filtered, value) => {
-    const lang = value.querySelector('language').innerHTML;
-    if (!filtered[lang]) filtered[lang] = [];
-    filtered[lang].push(value);
-    return filtered;
-  }, {});
-}
-
-function parseProductsXml2Csv(xmlProducts) {
-  let csv = 'data:text/csv;charset=utf-8,';
-  csv += psProductFields.join(';') + '\n';
-  xmlProducts.forEach(product => { csv += buildProductLine(product) + '\n'; });
-  return csv;
-}
-
-function buildProductLine(xmlProduct) {
-  let line = '';
-  for (const field of psProductFields) {
-    let fieldValue = getProductValue(xmlProduct, field);
-    fieldValue = fieldValue.replace(/"/g, '""');
-    line += `"${fieldValue}"`;
-    line += ';'
-  }
-  return line;
-}
+/*** NOT USED 
+const psProductFields = [
+  'id', 'active', 'name', 'categories', 
+  'price tax excluded', 'tax rules id', 'wholesale price', 'on sale', 
+  'discount amount', 'discount percent', 'discount from', 'discount to', 
+  'reference', 'supplier reference', 'supplier', 'manufacturer', 'ean13', 
+  'upc', 'ecotax', 'width', 'height', 'depth', 'weight', 
+  'delivery time in-stock', 'delivery time out-of-stock',
+  'quantity', 'minimal quantity', 'low stock level', 'send email when quantity < level',
+  'visibility', 'additional shipping cost', 'unity', 'unit price',
+  'summary', 'description', 'tags', 'meta title', 'meta keywords', 
+  'meta description', 'URL rewritten', 'text when in stock', 'text when backorder allowed',
+  'available for order', 'available date', 'creation date', 'show price',
+  'image URLs', 'image alt texts', 'delete existing images', 'feature',
+  'online only', 'condition', 'customizable (0 = No, 1 = Yes)', 
+  'uploadable files (0 = No, 1 = Yes)', 'text fields (0 = No, 1 = Yes)',
+  'out of stock action', 'virtual product', 'file URL', 'allowed downloads',
+  'expiration date', 'number of days', 'shop id/name', 
+  'advanced stock management', 'depends On Stock', 'warehouse', 'acessories'
+];
 
 function getProductValue(xmlProduct, field) {
   switch (field) {
@@ -262,8 +180,8 @@ function getProductValue(xmlProduct, field) {
       return xmlProduct.querySelector('weight').innerHTML;
     case 'quantity':
       return xmlProduct.querySelector('quantity').innerHTML;
-    /*case 'description':
-      return xmlProduct.querySelector('description_short').innerHTML;*/
+    case 'description':
+      return xmlProduct.querySelector('description_short').innerHTML;
     case 'meta title':
       return xmlProduct.querySelector('meta_title').innerHTML;
     case 'meta keywords':
@@ -300,18 +218,35 @@ function getProductValue(xmlProduct, field) {
       return '';
   }
 }
+*/
 
-async function getCombinationsCsv(xml) {
-  const xmlCombinations = await parseXml(xml);
-  const combinations = Array.from(xmlCombinations.querySelectorAll('twinPrestaShopProductAttributes'));
-  const csv = parseCombinationsXml2Csv(combinations);
-  return csv;
-}
+/*** COMBINATIONS UPDATE ***
+ ********************************/
+const psCombinationsFields = [
+  'attribute', 'value', 'supplier reference', 'reference', 'wholesale price', 
+  'impact on price', 'ecotax', 'quantity', 'minimal quantity', 'impact on weight',  
+  'shop id/name'
+];
 
-function parseCombinationsXml2Csv(xmlCombinations) {
+const updateCombinationsBtn = document.querySelector('#updateCombinations');
+
+updateCombinationsBtn.addEventListener('click', async (event) => {
+  event.stopPropagation();
+  event.preventDefault();
+  
+  const teinorRawXml = document.querySelector('#xmlCombinations').files[0];
+  const teinorXml = await getTeinorXmlNodes(teinorRawXml, 'combination');
+  const teinorCsv = buildCombinationsCsv(teinorXml);
+
+  downloadCsv(teinorCsv, 'combinations.csv');
+});
+
+function buildCombinationsCsv(teinorCombinationsXml) {
   let csv = 'data:text/csv;charset=utf-8,';
   csv += psCombinationsFields.join(';') + '\n';
-  xmlCombinations.forEach(combination => { csv += buildCombinationLine(combination) + '\n'; });
+  teinorCombinationsXml.forEach(combination => {
+    csv += buildCombinationLine(combination) + '\n'; 
+  });
   return csv;
 }
 
@@ -348,13 +283,20 @@ function getCombinationValue(xmlCombination, field) {
       return xmlCombination.querySelector('minimal_quantity').innerHTML;
     case 'impact on weight':
       return xmlCombination.querySelector('weight').innerHTML;
-    case 'default':
-        return xmlCombination.querySelector('default_on') ? '0': '1';
     case 'shop id/name':
       return xmlCombination.querySelector('shop').innerHTML;
     default:
       return '';
   }
+}
+
+/*** GENERAL HELPER FUNCTIONS ***
+ ********************************/
+async function getTeinorXmlNodes(rawXml, entity) {
+  const selector = entity === 'product' ? 'twinPrestaShop5' : 'twinPrestaShopProductAttributes';
+  const parsedXml = await parseXml(rawXml);
+  const xmlProducts = Array.from(parsedXml.querySelectorAll(selector));
+  return xmlProducts;
 }
 
 function getFileContent(file) {
@@ -384,4 +326,32 @@ async function parseXml(xml) {
   } catch(error) {
     alert(error);
   }
+}
+
+function buildCsv(json, headers) {
+  let csv = 'data:text/csv;charset=utf-8,';
+  csv += headers.join(';') + '\n';
+  json.forEach(item => { csv += buildCsvLine(item, headers); });
+  return csv;
+}
+
+function buildCsvLine(item, headers) {
+  let line = '';
+  for (const header of headers) {
+    let fieldValue = item[header];
+    fieldValue = fieldValue.replace(/"/g, '""');
+    line += `"${fieldValue}"`;
+    line += ';'
+  }
+  line += '\n';
+  return line;
+}
+
+function downloadCsv(csv, fileName) {
+  const csvUri = encodeURI(csv);
+  const link = document.createElement("a");
+  link.setAttribute("href", csvUri);
+  link.setAttribute("download", fileName);
+  document.body.appendChild(link);
+  link.click();
 }
